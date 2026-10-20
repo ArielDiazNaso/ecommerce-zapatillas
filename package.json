@@ -1,0 +1,47 @@
+{
+  "name": "ecommerce-zapatillas",
+  "version": "1.0.0",
+  "description": "Sistema de Gestión Integral y E-Commerce para Tienda de Deportes y Zapatillas (React + Vite + Bootstrap 5 + Express + Turso/MySQL)",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node server/index.js",
+    "server": "node server/index.js",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "ecommerce",
+    "zapatillas",
+    "deportes",
+    "pos",
+    "inventario",
+    "proyectos",
+    "turso",
+    "react",
+    "express"
+  ],
+  "author": "Ariel Díaz Naso",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@libsql/client": "^0.18.0",
+    "bcryptjs": "^3.0.3",
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.2",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "supertest": "^7.3.1",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  }
+}
