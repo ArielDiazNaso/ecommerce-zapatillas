@@ -20,6 +20,7 @@ export default function Navbar() {
   } = useApp();
 
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [submittingOrder, setSubmittingOrder] = useState(false);
@@ -42,7 +43,12 @@ export default function Navbar() {
     newPassword: ''
   });
 
+  function closeMobileMenu() {
+    setMobileMenuOpen(false);
+  }
+
   function openCartModal() {
+    closeMobileMenu();
     setCheckoutData({
       customer_name: user?.name || checkoutData.customer_name || '',
       customer_email: user?.email || checkoutData.customer_email || '',
@@ -57,6 +63,7 @@ export default function Navbar() {
 
   function openProfileModal() {
     if (!user) return;
+    closeMobileMenu();
     setProfileForm({
       name: user.name || '',
       phone: user.phone || '',
@@ -130,133 +137,241 @@ export default function Navbar() {
     <>
       <nav className="navbar navbar-expand-xl sticky-top navbar-stride py-2">
         <div className="container-fluid px-3 px-lg-4">
-          <Link className="navbar-brand d-flex align-items-center gap-2 fw-bold" to="/">
+          {/* Logo Marca */}
+          <Link
+            className="navbar-brand d-flex align-items-center gap-2 fw-bold m-0"
+            to="/"
+            onClick={closeMobileMenu}
+          >
             <span className="brand-badge">STRIDE PRO</span>
             <span className="d-none d-sm-inline small fw-semibold text-secondary">
               Zapatillas & Deportes
             </span>
           </Link>
 
+          {/* Controles compactos siempre visibles a la derecha */}
           <div className="d-flex align-items-center gap-2 order-xl-last">
+            {/* Botón Modo Claro / Oscuro */}
             <button
               type="button"
               onClick={toggleTheme}
-              className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+              className="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center nav-icon-btn"
               title={theme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
+              aria-label="Cambiar tema"
             >
               <i className={`bi ${theme === 'light' ? 'bi-moon-stars-fill' : 'bi-sun-fill text-warning'}`}></i>
-              <span className="d-none d-md-inline">{theme === 'light' ? 'Oscuro' : 'Claro'}</span>
+              <span className="d-none d-xxl-inline ms-1">{theme === 'light' ? 'Oscuro' : 'Claro'}</span>
             </button>
 
+            {/* Botón Carrito (compacto en móvil, con texto en desktop) */}
             <button
               type="button"
               onClick={openCartModal}
-              className="btn btn-sm btn-stride position-relative d-flex align-items-center gap-1 px-3"
+              className="btn btn-sm btn-stride position-relative d-flex align-items-center gap-1 px-2 px-sm-3"
+              aria-label="Abrir carrito"
             >
               <i className="bi bi-bag-check-fill"></i>
-              <span>Carrito</span>
+              <span className="d-none d-sm-inline">Carrito</span>
               {cartCount > 0 && (
                 <span className="badge rounded-pill bg-dark text-white ms-1">{cartCount}</span>
               )}
             </button>
 
-            {user ? (
-              <div className="d-flex align-items-center gap-1">
-                <button
-                  type="button"
-                  onClick={openProfileModal}
-                  className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
-                  title="Editar mi perfil"
-                >
-                  <i className="bi bi-person-badge"></i>
-                  <span className="d-none d-md-inline">{user.name.split(' ')[0]}</span>
-                  <span className="badge bg-primary text-uppercase" style={{ fontSize: '0.65rem' }}>
-                    {user.role}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    logout();
-                    navigate('/');
-                  }}
-                  className="btn btn-sm btn-outline-danger"
-                  title="Cerrar sesión"
-                >
-                  <i className="bi bi-box-arrow-right"></i>
-                </button>
-              </div>
-            ) : (
-              <Link to="/login" className="btn btn-sm btn-outline-primary fw-semibold">
-                <i className="bi bi-person-circle me-1"></i>Ingresar
-              </Link>
-            )}
+            {/* Botones de Usuario solo en Desktop (en móvil van dentro del menú desplegable para no saturar) */}
+            <div className="d-none d-xl-flex align-items-center gap-1">
+              {user ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={openProfileModal}
+                    className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
+                    title="Editar mi perfil"
+                  >
+                    <i className="bi bi-person-badge"></i>
+                    <span>{user.name.split(' ')[0]}</span>
+                    <span className="badge bg-primary text-uppercase" style={{ fontSize: '0.65rem' }}>
+                      {user.role}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logout();
+                      navigate('/');
+                    }}
+                    className="btn btn-sm btn-outline-danger"
+                    title="Cerrar sesión"
+                  >
+                    <i className="bi bi-box-arrow-right"></i>
+                  </button>
+                </>
+              ) : (
+                <Link to="/login" className="btn btn-sm btn-outline-primary fw-semibold">
+                  <i className="bi bi-person-circle me-1"></i>Ingresar
+                </Link>
+              )}
+            </div>
 
+            {/* Botón Hamburguesa Mobile controlado por React */}
             <button
-              className="navbar-toggler btn-sm"
+              className="btn btn-sm btn-outline-secondary d-xl-none nav-icon-btn"
               type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#strideNavbar"
-              aria-controls="strideNavbar"
-              aria-expanded="false"
-              aria-label="Toggle navigation"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-expanded={mobileMenuOpen}
+              aria-label="Abrir menú de navegación"
             >
-              <span className="navbar-toggler-icon"></span>
+              <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'} fs-5`}></i>
             </button>
           </div>
 
-          <div className="collapse navbar-collapse" id="strideNavbar">
-            <ul className="navbar-nav me-auto mb-2 mb-xl-0 gap-1 mt-2 mt-xl-0">
-              <li className="nav-item">
-                <NavLink className="nav-link px-2 fw-medium" to="/">
-                  <i className="bi bi-shop me-1"></i>Tienda Online
-                </NavLink>
-              </li>
-
-              {user && (
+          {/* Menú de Navegación (Colapsable en Móvil/Tablet, Horizontal en Desktop XL) */}
+          <div className={`collapse navbar-collapse ${mobileMenuOpen ? 'show' : ''}`} id="strideNavbar">
+            <div className="mobile-nav-drawer mt-3 mt-xl-0">
+              <ul className="navbar-nav me-auto mb-2 mb-xl-0 gap-1">
                 <li className="nav-item">
-                  <NavLink className="nav-link px-2 fw-medium" to="/mis-pedidos">
-                    <i className="bi bi-receipt me-1"></i>Mis Pedidos
+                  <NavLink
+                    className={({ isActive }) =>
+                      `nav-link px-3 py-2 py-xl-1 rounded-3 fw-medium ${isActive ? 'active-nav-pill' : ''}`
+                    }
+                    to="/"
+                    onClick={closeMobileMenu}
+                  >
+                    <i className="bi bi-shop me-2 me-xl-1"></i>Tienda Online
                   </NavLink>
                 </li>
-              )}
 
-              {isStaff && (
-                <>
+                {user && (
                   <li className="nav-item">
-                    <NavLink className="nav-link px-2 fw-medium" to="/pos">
-                      <i className="bi bi-cash-register me-1 text-success"></i>Terminal POS
+                    <NavLink
+                      className={({ isActive }) =>
+                        `nav-link px-3 py-2 py-xl-1 rounded-3 fw-medium ${isActive ? 'active-nav-pill' : ''}`
+                      }
+                      to="/mis-pedidos"
+                      onClick={closeMobileMenu}
+                    >
+                      <i className="bi bi-receipt me-2 me-xl-1"></i>Mis Pedidos
                     </NavLink>
                   </li>
-                  <li className="nav-item">
-                    <NavLink className="nav-link px-2 fw-medium" to="/inventario">
-                      <i className="bi bi-boxes me-1 text-warning"></i>Inventario & Alertas
-                    </NavLink>
-                  </li>
-                  <li className="nav-item">
-                    <NavLink className="nav-link px-2 fw-medium" to="/proyectos">
-                      <i className="bi bi-kanban me-1 text-info"></i>Proyectos
-                    </NavLink>
-                  </li>
-                  <li className="nav-item">
-                    <NavLink className="nav-link px-2 fw-medium" to="/usuarios">
-                      <i className="bi bi-people me-1"></i>Clientes & Personal
-                    </NavLink>
-                  </li>
-                  <li className="nav-item">
-                    <NavLink className="nav-link px-2 fw-medium" to="/admin">
-                      <i className="bi bi-speedometer2 me-1 text-danger"></i>Panel Admin
-                    </NavLink>
-                  </li>
-                </>
-              )}
+                )}
 
-              <li className="nav-item">
-                <NavLink className="nav-link px-2 fw-medium" to="/feedback">
-                  <i className="bi bi-chat-heart me-1"></i>Retroalimentación
-                </NavLink>
-              </li>
-            </ul>
+                {isStaff && (
+                  <>
+                    <li className="nav-item">
+                      <NavLink
+                        className={({ isActive }) =>
+                          `nav-link px-3 py-2 py-xl-1 rounded-3 fw-medium ${isActive ? 'active-nav-pill' : ''}`
+                        }
+                        to="/pos"
+                        onClick={closeMobileMenu}
+                      >
+                        <i className="bi bi-cash-register me-2 me-xl-1 text-success"></i>Terminal POS
+                      </NavLink>
+                    </li>
+                    <li className="nav-item">
+                      <NavLink
+                        className={({ isActive }) =>
+                          `nav-link px-3 py-2 py-xl-1 rounded-3 fw-medium ${isActive ? 'active-nav-pill' : ''}`
+                        }
+                        to="/inventario"
+                        onClick={closeMobileMenu}
+                      >
+                        <i className="bi bi-boxes me-2 me-xl-1 text-warning"></i>Inventario & Alertas
+                      </NavLink>
+                    </li>
+                    <li className="nav-item">
+                      <NavLink
+                        className={({ isActive }) =>
+                          `nav-link px-3 py-2 py-xl-1 rounded-3 fw-medium ${isActive ? 'active-nav-pill' : ''}`
+                        }
+                        to="/proyectos"
+                        onClick={closeMobileMenu}
+                      >
+                        <i className="bi bi-kanban me-2 me-xl-1 text-info"></i>Proyectos
+                      </NavLink>
+                    </li>
+                    <li className="nav-item">
+                      <NavLink
+                        className={({ isActive }) =>
+                          `nav-link px-3 py-2 py-xl-1 rounded-3 fw-medium ${isActive ? 'active-nav-pill' : ''}`
+                        }
+                        to="/usuarios"
+                        onClick={closeMobileMenu}
+                      >
+                        <i className="bi bi-people me-2 me-xl-1"></i>Clientes & Personal
+                      </NavLink>
+                    </li>
+                    <li className="nav-item">
+                      <NavLink
+                        className={({ isActive }) =>
+                          `nav-link px-3 py-2 py-xl-1 rounded-3 fw-medium ${isActive ? 'active-nav-pill' : ''}`
+                        }
+                        to="/admin"
+                        onClick={closeMobileMenu}
+                      >
+                        <i className="bi bi-speedometer2 me-2 me-xl-1 text-danger"></i>Panel Admin
+                      </NavLink>
+                    </li>
+                  </>
+                )}
+
+                <li className="nav-item">
+                  <NavLink
+                    className={({ isActive }) =>
+                      `nav-link px-3 py-2 py-xl-1 rounded-3 fw-medium ${isActive ? 'active-nav-pill' : ''}`
+                    }
+                    to="/feedback"
+                    onClick={closeMobileMenu}
+                  >
+                    <i className="bi bi-chat-heart me-2 me-xl-1"></i>Retroalimentación
+                  </NavLink>
+                </li>
+              </ul>
+
+              {/* Panel de Usuario dedicado para Móviles y Tablets (< XL) */}
+              <div className="d-xl-none border-top pt-3 mt-2">
+                {user ? (
+                  <div className="d-flex flex-column gap-2">
+                    <div className="d-flex align-items-center justify-content-between px-2">
+                      <div>
+                        <div className="fw-bold small">{user.name}</div>
+                        <div className="text-secondary" style={{ fontSize: '0.75rem' }}>
+                          {user.email}
+                        </div>
+                      </div>
+                      <span className="badge bg-primary text-uppercase">{user.role}</span>
+                    </div>
+                    <div className="d-flex gap-2 mt-1">
+                      <button
+                        type="button"
+                        onClick={openProfileModal}
+                        className="btn btn-sm btn-outline-primary flex-grow-1"
+                      >
+                        <i className="bi bi-person-gear me-1"></i>Mi Perfil
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          closeMobileMenu();
+                          logout();
+                          navigate('/');
+                        }}
+                        className="btn btn-sm btn-outline-danger flex-grow-1"
+                      >
+                        <i className="bi bi-box-arrow-right me-1"></i>Salir
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={closeMobileMenu}
+                    className="btn btn-stride w-100 py-2 fw-semibold"
+                  >
+                    <i className="bi bi-person-circle me-2"></i>Iniciar Sesión / Registrarse
+                  </Link>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </nav>
@@ -264,11 +379,11 @@ export default function Navbar() {
       {/* Modal de Carrito y Checkout Online */}
       {showCart && (
         <div className="modal-backdrop-custom" onClick={() => setShowCart(false)}>
-          <div className="modal-panel-custom p-4" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-panel-custom p-3 p-sm-4" onClick={(e) => e.stopPropagation()}>
             <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
               <h5 className="mb-0 fw-bold">
                 <i className="bi bi-bag-check-fill text-danger me-2"></i>
-                Tu Carrito de Compras ({cartCount} {cartCount === 1 ? 'unidad' : 'unidades'})
+                Tu Carrito ({cartCount} {cartCount === 1 ? 'unidad' : 'unidades'})
               </h5>
               <button
                 type="button"
@@ -304,18 +419,18 @@ export default function Navbar() {
                           <img
                             src={item.image_url}
                             alt={item.name}
-                            style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8 }}
+                            style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 8 }}
                           />
                           <div>
-                            <div className="fw-bold">{item.name}</div>
+                            <div className="fw-bold small">{item.name}</div>
                             <div className="small text-secondary">
-                              Marca: {item.brand} | Talle: <span className="badge bg-secondary">{item.size}</span> |{' '}
-                              {formatCurrency(item.price)} c/u
+                              {item.brand} | Talle: <span className="badge bg-secondary">{item.size}</span> |{' '}
+                              {formatCurrency(item.price)}
                             </div>
                           </div>
                         </div>
 
-                        <div className="d-flex align-items-center gap-2">
+                        <div className="d-flex align-items-center justify-content-between w-100 w-sm-auto gap-2 mt-1 mt-sm-0">
                           <div className="btn-group btn-group-sm">
                             <button
                               type="button"
@@ -335,17 +450,19 @@ export default function Navbar() {
                               +
                             </button>
                           </div>
-                          <span className="fw-bold ms-2" style={{ minWidth: 95, textAlign: 'right' }}>
-                            {formatCurrency(item.price * item.quantity)}
-                          </span>
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger ms-1"
-                            onClick={() => removeFromCart(item.key)}
-                            title="Quitar producto"
-                          >
-                            <i className="bi bi-trash"></i>
-                          </button>
+                          <div className="d-flex align-items-center gap-2">
+                            <span className="fw-bold ms-2">
+                              {formatCurrency(item.price * item.quantity)}
+                            </span>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-danger"
+                              onClick={() => removeFromCart(item.key)}
+                              title="Quitar producto"
+                            >
+                              <i className="bi bi-trash"></i>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -450,7 +567,7 @@ export default function Navbar() {
                       </div>
                     </div>
 
-                    <div className="d-flex justify-content-between align-items-center mt-4 pt-2 border-top">
+                    <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 pt-2 border-top">
                       <button
                         type="button"
                         className="btn btn-sm btn-outline-danger"
@@ -468,10 +585,10 @@ export default function Navbar() {
                         </button>
                         <button
                           type="submit"
-                          className="btn btn-stride px-4"
+                          className="btn btn-sm btn-stride px-3"
                           disabled={submittingOrder}
                         >
-                          {submittingOrder ? 'Registrando pedido...' : 'Confirmar Pedido Online'}
+                          {submittingOrder ? 'Registrando...' : 'Confirmar Pedido'}
                         </button>
                       </div>
                     </div>
@@ -487,7 +604,7 @@ export default function Navbar() {
       {showProfile && user && (
         <div className="modal-backdrop-custom" onClick={() => setShowProfile(false)}>
           <div
-            className="modal-panel-custom p-4"
+            className="modal-panel-custom p-3 p-sm-4"
             style={{ maxWidth: 480 }}
             onClick={(e) => e.stopPropagation()}
           >
